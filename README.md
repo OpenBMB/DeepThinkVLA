@@ -214,11 +214,10 @@ DeepThinkVLA builds on open-source components from Hugging Face Transformers, PE
 If you find this repository helpful, please consider citing:
 
 ```bibtex
-@misc{deepthinkvla2025,
-  title        = {DeepThinkVLA: Enhancing Reasoning Capability of Vision-Language-Action Models},
-  author       = {Cheng Yin, Yankai Lin, Wang Xu, Sikyuen Tam, Xiangrui Zeng, Zhiyuan Liu, Zhouping Yin},
-  year         = {2025},
-  howpublished = {\url{https://github.com/wadeKeith/DeepThinkVLA}},
-  note         = {GitHub Repository}
+@article{yin2025deepthinkvla,
+  title={DeepThinkVLA: Enhancing Reasoning Capability of Vision-Language-Action Models},
+  author={Yin, Cheng and Lin, Yankai and Xu, Wang and Tam, Sikyuen and Zeng, Xiangrui and Liu, Zhiyuan and Yin, Zhouping},
+  journal={arXiv preprint arXiv:2511.15669},
+  year={2025}
 }
 ```
