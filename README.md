@@ -198,7 +198,7 @@ DeepThinkVLA/
 ```
 
 ## ⭐ Star History
-![Star History Chart](figs/star-history.svg)
+![Star History Chart](figs/star-history.png)
 
 _This chart auto-updates hourly via GitHub Actions._
 
