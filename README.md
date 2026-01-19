@@ -29,6 +29,7 @@
 - [Embodied CoT Dataset](#embodied-cot-dataset)
 - [Training Pipeline](#training-pipeline)
 - [Performance](#performance)
+- [LIBERO Plus Zero-shot Evaluation](#-libero-zero-shot-evaluation)
 - [Qualitative Behavior](#qualitative-behavior)
 - [Setup](#setup)
 - [Data & Checkpoints](#data--checkpoints)
@@ -38,8 +39,12 @@
 - [Acknowledgements](#acknowledgements)
 - [References](#references)
 
+## 📰 News
+- **2026-01-20**: Added **LIBERO Plus** zero-shot evaluation instructions + results (see the standalone eval repo: [`wadeKeith/DeepThinkVLA_libero_plus`](https://github.com/wadeKeith/DeepThinkVLA_libero_plus#)).
+
 ## 📝 TODO
 - [x] LIBERO benchmark
+- [x] LIBERO Plus zero-shot evaluation
 - [ ] RobotWin benchmark
 - [ ] Real-world hardware experiments
 
@@ -76,6 +81,48 @@ Training proceeds in two stages:
 - DeepThinkVLA reaches a 97.0% average success rate across LIBERO, outperforming autoregressive, diffusion, and parallel-decoding baselines under the single-model protocol.
 - RL-over-SFT lifts LIBERO-Long from 94.2% to 96.2% without extra demonstrations, demonstrating recoveries on long-horizon tasks.
 - The hybrid decoder outperforms the naive autoregressive CoT variant by 15.5 points and keeps latency manageable; Mask CoT inference keeps accuracy while running 0.175x pi0-FAST latency.
+
+## 🧪 LIBERO Plus Zero-shot Evaluation
+We additionally report **zero-shot transfer performance on LIBERO Plus**:
+
+- **Training**: the model is trained **only on the standard LIBERO dataset** (no LIBERO Plus fine-tuning).
+- **Evaluation**: the trained model is **directly evaluated on LIBERO Plus** (zero-shot).
+- **Eval scripts**: we maintain a lightweight, standalone evaluation repo here:
+  - [`wadeKeith/DeepThinkVLA_libero_plus`](https://github.com/wadeKeith/DeepThinkVLA_libero_plus#)
+
+### Run (in the LIBERO Plus eval repo)
+```bash
+python experiments/run_libero_plus_eval.py \
+  --pretrained_checkpoint /path/to/deepthinkvla_libero_checkpoint \
+  --num_images_in_input 2 \
+  --task_suite_name libero_10 \
+  --max_new_tokens 2048 \
+  --swanlab_mode disabled
+```
+
+Or use the wrapper:
+```bash
+bash eval.sh
+```
+
+### Outputs
+- **Logs**: `experiments/logs/`
+- **Rollout videos** (if enabled): `rollouts/`
+
+### Zero-shot Results (LIBERO Plus)
+The following numbers are **zero-shot success rates (SR)** on **LIBERO Plus**, evaluated with a DeepThinkVLA model **trained only on LIBERO** (no LIBERO Plus fine-tuning).
+
+#### Breakdown by shift type
+
+| Objects Layout | Language Instructions | Light Conditions | Camera Viewpoints | Robot Initial States | Background Textures | Sensor Noise | Total |
+| -------------- | --------------------- | ---------------- | ----------------- | -------------------- | ------------------- | ------------ | ----- |
+| 0.7993         | 0.845                 | 0.900            | 0.885             | 0.405                | 0.753               | 0.944        | 0.790 |
+
+#### Breakdown by task suite
+
+| object | spatial | goal  | 10    | Total |
+| ------ | ------- | ----- | ----- | ----- |
+| 0.840  | 0.879   | 0.697 | 0.746 | 0.790 |
 
 ## 🎬 Qualitative Behavior
 ![Reasoning-enabled recovery](figs/fig5.png)
