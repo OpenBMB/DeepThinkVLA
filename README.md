@@ -245,9 +245,13 @@ DeepThinkVLA/
 ```
 
 ## ⭐ Star History
-![Star History Chart](figs/star-history.png)
-
-_This chart auto-updates hourly via GitHub Actions._
+<a href="https://www.star-history.com/?repos=OpenBMB%2FDeepThinkVLA&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=OpenBMB/DeepThinkVLA&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=OpenBMB/DeepThinkVLA&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=OpenBMB/DeepThinkVLA&type=date&legend=top-left" />
+ </picture>
+</a>
 
 ## 🙏 Acknowledgements
 DeepThinkVLA builds on open-source components from Hugging Face Transformers, PEFT, DeepSpeed, LeRobot, LIBERO, VERL, **SimpleVLA-RL** and the broader robotics community. We thank the maintainers of:
