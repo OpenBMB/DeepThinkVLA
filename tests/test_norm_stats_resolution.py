@@ -40,3 +40,13 @@ def test_resolve_norm_stats_path_downloads_hub_repository(monkeypatch, tmp_path)
 def test_resolve_norm_stats_path_reports_missing_local_file(tmp_path):
     with pytest.raises(FileNotFoundError, match="norm_stats.json"):
         normalize.resolve_norm_stats_path(tmp_path / "missing-checkpoint")
+
+
+def test_missing_absolute_path_does_not_trigger_hub_lookup(monkeypatch, tmp_path):
+    def fail_hf_hub_download(**kwargs):
+        raise AssertionError(f"unexpected Hub lookup: {kwargs}")
+
+    monkeypatch.setattr(normalize, "hf_hub_download", fail_hf_hub_download)
+
+    with pytest.raises(FileNotFoundError, match="local checkpoint"):
+        normalize.resolve_norm_stats_path(tmp_path / "missing" / "checkpoint")

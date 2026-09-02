@@ -29,9 +29,14 @@ def resolve_norm_stats_path(checkpoint_path):
     # Hub repository IDs have the ``namespace/name`` form.  Restricting the
     # fallback to this shape avoids turning a missing local path into an
     # unexpected network request.
-    repo_parts = checkpoint_path.strip("/").split("/")
+    repo_parts = checkpoint_path.split("/")
+    path_obj = Path(checkpoint_path)
+    has_drive = bool(os.path.splitdrive(checkpoint_path)[0])
     is_repo_id = (
-        not Path(checkpoint_path).exists()
+        not path_obj.exists()
+        and not path_obj.is_absolute()
+        and not has_drive
+        and not checkpoint_path.startswith((".", "~"))
         and len(repo_parts) == 2
         and all(repo_parts)
         and not any("\\" in part for part in repo_parts)
