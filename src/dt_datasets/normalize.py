@@ -4,9 +4,49 @@
 # Copyright (c) Cheng Yin. All rights reserved.
 # See LICENSE file in the project root for license information.
 
+import os
+from pathlib import Path
+
 import numpy as np
 import torch
+from huggingface_hub import hf_hub_download
 from torch import Tensor, nn
+
+
+def resolve_norm_stats_path(checkpoint_path):
+    """Resolve ``norm_stats.json`` for a local checkpoint or Hub repository.
+
+    Training and evaluation scripts accept either a local checkpoint directory
+    or a Hugging Face repository ID.  Keep local files fully offline, while
+    resolving the latter through the Hub cache when the checkpoint is given as
+    an ID (for example, ``org/model``).
+    """
+    checkpoint_path = os.fspath(checkpoint_path)
+    local_path = Path(checkpoint_path) / "norm_stats.json"
+    if local_path.is_file():
+        return local_path
+
+    # Hub repository IDs have the ``namespace/name`` form.  Restricting the
+    # fallback to this shape avoids turning a missing local path into an
+    # unexpected network request.
+    repo_parts = checkpoint_path.strip("/").split("/")
+    is_repo_id = (
+        not Path(checkpoint_path).exists()
+        and len(repo_parts) == 2
+        and all(repo_parts)
+        and not any("\\" in part for part in repo_parts)
+    )
+    if is_repo_id:
+        try:
+            return Path(hf_hub_download(repo_id=checkpoint_path, filename="norm_stats.json"))
+        except Exception as exc:
+            raise FileNotFoundError(
+                f"Unable to resolve norm_stats.json from checkpoint '{checkpoint_path}'."
+            ) from exc
+
+    raise FileNotFoundError(
+        f"norm_stats.json was not found in local checkpoint '{checkpoint_path}'."
+    )
 
 
 def create_stats_buffers(
