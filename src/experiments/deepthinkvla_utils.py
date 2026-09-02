@@ -18,7 +18,7 @@ import textwrap
 from transformers import GenerationConfig
 from torchvision import transforms
 from sft.modeling_deepthinkvla import DeepThinkVLA
-from dt_datasets.normalize import Unnormalize_Action
+from dt_datasets.normalize import Unnormalize_Action, resolve_norm_stats_path
 from sft.constants import ACTION_PROPRIO_NORMALIZATION_TYPE, ACTION_MASK, NUM_ACTIONS_CHUNK, ACTION_DIM
 
 # Initialize important constants
@@ -136,26 +136,22 @@ def get_vla(cfg) -> torch.nn.Module:
 
 
 def _get_unomrmalize_action(checkpoint_path: str) -> None:
+    try:
+        dataset_statistics_path = resolve_norm_stats_path(checkpoint_path)
+    except FileNotFoundError as exc:
+        print(f"WARNING: {exc}")
+        raise
 
-    dataset_statistics_path = os.path.join(checkpoint_path, "norm_stats.json")
-    if os.path.isfile(dataset_statistics_path):
-        with open(dataset_statistics_path, "r") as f:
-            norm_stats = json.load(f)
-        for key in norm_stats["action"].keys():
-            norm_stats["action"][key] = np.array(norm_stats["action"][key], dtype=np.float64)
-        unomrmalize_action = Unnormalize_Action(
-                normalization_type=ACTION_PROPRIO_NORMALIZATION_TYPE,
-                stats=norm_stats["action"],
-                action_mask=ACTION_MASK,
-            )
-        return unomrmalize_action
-    else:
-        print(
-            "WARNING: No local dataset_statistics.json file found for current checkpoint.\n"
-            "You can ignore this if you are loading the base VLA (i.e. not fine-tuned) checkpoint."
-            "Otherwise, you may run into errors when trying to call `predict_action()` due to an absent `unnorm_key`."
+    with open(dataset_statistics_path, "r") as f:
+        norm_stats = json.load(f)
+    for key in norm_stats["action"].keys():
+        norm_stats["action"][key] = np.array(norm_stats["action"][key], dtype=np.float64)
+    unomrmalize_action = Unnormalize_Action(
+            normalization_type=ACTION_PROPRIO_NORMALIZATION_TYPE,
+            stats=norm_stats["action"],
+            action_mask=ACTION_MASK,
         )
-        raise NotImplementedError("No norm stats found!")
+    return unomrmalize_action
 
 
 def resize_image_for_policy(img: np.ndarray, resize_size: Union[int, Tuple[int, int]]) -> np.ndarray:
