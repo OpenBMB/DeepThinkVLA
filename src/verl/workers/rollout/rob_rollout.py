@@ -44,7 +44,7 @@ import gc
 from multiprocessing import Process, Queue
 from collections import defaultdict
 import json
-from dt_datasets.normalize import Unnormalize_Action
+from dt_datasets.normalize import Unnormalize_Action, resolve_norm_stats_path
 from sft.constants import ACTION_PROPRIO_NORMALIZATION_TYPE, ACTION_MASK, NUM_ACTIONS_CHUNK, ACTION_DIM
 
 __all__ = ['RobHFRollout']
@@ -229,24 +229,21 @@ class RobHFRollout(BaseRollout):
                                 }
         self.processor = AutoProcessor.from_pretrained(config.pretrained_checkpoint)
 
-        dataset_statistics_path = os.path.join(config.pretrained_checkpoint, "norm_stats.json")
-        if os.path.isfile(dataset_statistics_path):
-            with open(dataset_statistics_path, "r") as f:
-                norm_stats = json.load(f)
-            for key in norm_stats["action"].keys():
-                norm_stats["action"][key] = np.array(norm_stats["action"][key], dtype=np.float64)
-            self.unomrmalize_action = Unnormalize_Action(
-                normalization_type=ACTION_PROPRIO_NORMALIZATION_TYPE,
-                stats=norm_stats["action"],
-                action_mask=ACTION_MASK,
-            )
-        else:
-            print(
-                "WARNING: No local dataset_statistics.json file found for current checkpoint.\n"
-                "You can ignore this if you are loading the base VLA (i.e. not fine-tuned) checkpoint."
-                "Otherwise, you may run into errors when trying to call `predict_action()` due to an absent `unnorm_key`."
-            )
-            raise NotImplementedError("No norm stats found!")
+        try:
+            dataset_statistics_path = resolve_norm_stats_path(config.pretrained_checkpoint)
+        except FileNotFoundError as exc:
+            print(f"WARNING: {exc}")
+            raise
+
+        with open(dataset_statistics_path, "r") as f:
+            norm_stats = json.load(f)
+        for key in norm_stats["action"].keys():
+            norm_stats["action"][key] = np.array(norm_stats["action"][key], dtype=np.float64)
+        self.unomrmalize_action = Unnormalize_Action(
+            normalization_type=ACTION_PROPRIO_NORMALIZATION_TYPE,
+            stats=norm_stats["action"],
+            action_mask=ACTION_MASK,
+        )
         self.use_cot = "cot" in self.config.pretrained_checkpoint
 
     def process_input(self,inputs:list, task_descriptions:list):
